@@ -1,11 +1,15 @@
 import { createServerClient as createSSRServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+const defaultUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co";
+const defaultAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key";
+const defaultServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || defaultAnonKey;
+
 export function createServerClient() {
   const cookieStore = cookies();
   return createSSRServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    defaultUrl,
+    defaultAnonKey,
     {
       cookies: {
         get(name: string) { return cookieStore.get(name)?.value; },
@@ -23,8 +27,8 @@ export function createServerClient() {
 export function createServiceClient() {
   const cookieStore = cookies();
   return createSSRServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    defaultUrl,
+    defaultServiceKey,
     {
       cookies: {
         get(name: string) { return cookieStore.get(name)?.value; },

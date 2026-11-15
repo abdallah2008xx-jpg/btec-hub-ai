@@ -1,7 +1,26 @@
 import OpenAI from "openai";
 
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+// Lazy-initialize OpenAI client to prevent build-time errors when OPENAI_API_KEY is not set
+let _openai: OpenAI | null = null;
+
+export function getOpenAIClient(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY || "dummy-key-for-build",
+    });
+  }
+  return _openai;
+}
+
+export const openai = new Proxy({} as OpenAI, {
+  get(target, prop, receiver) {
+    const client = getOpenAIClient();
+    const value = Reflect.get(client, prop, receiver);
+    if (typeof value === "function") {
+      return value.bind(client);
+    }
+    return value;
+  },
 });
 
 export const BTEC_SYSTEM_PROMPT = `أنت مساعد أكاديمي متخصص في مناهج BTEC للطلاب في الأردن. اسمك "BTEC AI".
